@@ -1,9 +1,12 @@
+import copy
+import random
+from operator import attrgetter
+
 WHITE = "O"
 BLACK = "@"
 CORNER = "X"
 EMPTY = "-"
-DEPTH_LIMIT = 4
-
+DEPTH_LIMIT = 5
 
 class Board:
 	def __init__(self):
@@ -31,87 +34,125 @@ class Board:
 			for col in range(len(self.grid[row])):
 				if self.grid[row][col] == player:
 					#Check available moves for piece at (row,col)
-					possible_moves = checkmoves(self.grid, row, col)
+					possible_moves = self.check_moves(row, col)
 					moves[(row,col)] = possible_moves
 		return moves
 
-	def copy_board(self, board):
-		self.grid = board.grid
-		self.white = board.white
-		self.black = board.black
-		self.moves = board.moves
-
-	def move(self, pos_from, pos_to, player, enemy):
-		new_board = Board()
-		new_board.copy_board(self)
-		new_board.grid[pos_from[0]][pos_from[1]] == EMPTY
-		new_board.grid[pos_to[0]][pos_to[1]] == player
-		new_board.moves.append((pos_from,pos_to))
-		new_board.refresh(enemy)
-		return new_board
-
-	def refresh(self, enemy):
-		for row in range(len(self.grid)):
-			for col in range(len(self.grid)):
-				if self.grid[row][col] == enemy:
-					try:
-						vertical = checkelimination(self.grid[row-1][col], self.grid[row+1][col], enemy)
-					except:
-						pass
-					try:
-						horizontal = checkelimination(self.grid[row][col-1], self.grid[row][col+1], enemy)
-					except:
-						pass
-					if vertical or horizontal:
-						self.grid[row][col] == EMPTY
-						if enemy == BLACK:
-							self.black-= 1
-						elif enemy == WHITE:
-							self.white-= 1
-
-def checkelimination(axis_1, axis_2, enemy):
-	if(axis_1 == enemy or CORNER) and (axis_2 == enemy or CORNER):
-		return True
-	else:
-		return False
-
-
-
-
-def checkmoves(grid, row, col):
+	def check_moves(self, row, col):
 		moves = []
 		#Check north
 		try:
 			#Check adjacent
-			if grid[row-1][col] == EMPTY:
+			if self.grid[row-1][col] == EMPTY:
 				moves.append((row-1,col))
 			#Adjacent occupied, check if jump available
-			elif grid[row-2][col] == EMPTY:
+			elif self.grid[row-2][col] == EMPTY:
 				moves.append((row-2,col))
 		except:
 			pass
 		#Check south
 		try:
-			if grid[row+1][col] == EMPTY:
+			if self.grid[row+1][col] == EMPTY:
 				moves.append((row+1,col))
-			elif grid[row+2][col] == EMPTY:
+			elif self.grid[row+2][col] == EMPTY:
 				moves.append((row+2,col))
 		except:
 			pass
 		#Check west
 		try:
-			if grid[row][col-1] == EMPTY:
+			if self.grid[row][col-1] == EMPTY:
 				moves.append((row,col-1))
-			elif grid[row][col-2] == EMPTY:
+			elif self.grid[row][col-2] == EMPTY:
 				moves.append((row,col-2))
 		except:
 			pass
 		#Check east
 		try:
-			if grid[row][col+1] == EMPTY:
+			if self.grid[row][col+1] == EMPTY:
 				moves.append((row,col+1))
-			elif grid[row][col+2] == EMPTY:
+			elif self.grid[row][col+2] == EMPTY:
 				moves.append((row,col+2))
 		except:
 			pass
+		random.shuffle(moves)
 		return moves
+
+	def check_eliminated(self, row, col):
+		piece = self.grid[row][col]
+		enemy = opposite(piece)
+		try:
+			north = self.grid[row-1][col]
+			south = self.grid[row+1][col]
+			if((north == enemy or north == CORNER) and (south == enemy or south == CORNER)):
+				return True
+		except:
+			pass
+		try:
+			east = self.grid[row][col-1]
+			west = self.grid[row][col+1]
+			if((east == enemy or east == CORNER) and (west == enemy or west == CORNER)):
+				return True
+		except:
+			pass
+		return False
+
+	def move(self, pos_from, pos_to):
+		piece = self.grid[pos_from[0]][pos_from[1]]
+		self.grid[pos_to[0]][pos_to[1]] = piece
+		self.grid[pos_from[0]][pos_from[1]] = EMPTY
+		self.moves.append((pos_from, pos_to))
+		# Refresh board, eliminating enemy pieces
+		self.refresh(opposite(piece))
+		# Refresh board, check for sucides
+		self.refresh(piece)
+
+	def refresh(self, piece):
+		for row in range(len(self.grid)):
+			for col in range(len(self.grid)):
+				if self.grid[row][col] == piece:
+					if self.check_eliminated(row, col):
+						self.grid[row][col] = EMPTY
+						if piece == BLACK:
+							self.black-= 1
+						elif piece == WHITE:
+							self.white-= 1
+
+	def massacre(self):
+		depth = 0
+		board_states = []
+		board_states.append(self)
+		while depth < DEPTH_LIMIT:
+			possible_states = []
+			for board in board_states:
+				if board.black == 0:
+					depth = DEPTH_LIMIT
+					possible_states.append(board)
+					pass
+				else:
+					moves = board.available_moves(WHITE)
+					for pos_from in moves:
+						for pos_to in moves[pos_from]:
+							possible_board = copy.deepcopy(board)
+							possible_board.move(pos_from, pos_to)
+							possible_states.append(possible_board)
+			board_states = possible_states
+			depth+= 1
+
+		min_moves = DEPTH_LIMIT+len(self.moves)
+		min_black = self.black
+		optimal = False
+		check = []
+		for board in board_states:
+			check.append(len(board.moves))
+		print(set(check))
+		self = copy.deepcopy(min(board_states,key=attrgetter('black','moves')))
+		print(self.black)
+		return self
+
+
+
+def opposite(piece):
+	if piece == WHITE:
+		return BLACK
+	elif piece == BLACK:
+		return WHITE
