@@ -1,5 +1,6 @@
 from board import Board
 import copy
+import time #TODO: Remove
 
 BOARD_SIZE = 8
 MOVES = "Moves"
@@ -32,4 +33,6 @@ def main():
 
 #Driver execution
 if __name__ == '__main__':
+	start_time = time.time()
 	main()
+	print("Runtime: %s seconds" % (time.time() - start_time))

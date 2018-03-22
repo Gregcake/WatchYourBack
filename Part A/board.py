@@ -20,7 +20,7 @@ class Board:
 
 	def read_from_stdin(self, board_size):
 		for i in range(board_size):
-			row = list(input())
+			row = input().split(' ')
 			# Tally white and black pieces on the board
 			for space in row:
 				if space == WHITE:
@@ -49,16 +49,17 @@ class Board:
 		moves = []
 		# Check north
 		try:
-			# Check adjacent
-			if self.grid[row-1][col] == EMPTY:
+			# Check adjacent, block negative indexing
+			if self.grid[row-1][col] == EMPTY and row-1>=0:
 				moves.append((row-1,col))
-			# Adjacent occupied, check if jump available
-			elif self.grid[row-2][col] == EMPTY:
+			# Adjacent occupied, check if jump available, block negative indexing
+			elif self.grid[row-2][col] == EMPTY and row-2>=0:
 				moves.append((row-2,col))
 		except:
 			pass
 		# Check south
 		try:
+			# Check adjacent, catch index out of bounds errors
 			if self.grid[row+1][col] == EMPTY:
 				moves.append((row+1,col))
 			elif self.grid[row+2][col] == EMPTY:
@@ -67,9 +68,9 @@ class Board:
 			pass
 		# Check west
 		try:
-			if self.grid[row][col-1] == EMPTY:
+			if self.grid[row][col-1] == EMPTY and col-1>=0:
 				moves.append((row,col-1))
-			elif self.grid[row][col-2] == EMPTY:
+			elif self.grid[row][col-2] == EMPTY and col-2>=0:
 				moves.append((row,col-2))
 		except:
 			pass
@@ -152,6 +153,7 @@ class Board:
 				if board.black == 0:
 					optimal_cycle = True
 					possible_states.append(board)
+					depth = DEPTH_LIMIT
 				elif not optimal_cycle:
 					# For each possible move for this board
 					# 1. Generate a new board
@@ -168,8 +170,8 @@ class Board:
 			depth+= 1
 
 		# Depth limit reached, set the board to the most optimal solution this iteration
-		# min(black) and min(len(moves))
-		self = copy.deepcopy(min(board_states, key=lambda board:(board.black, len(board.moves))))
+		# min(black), min(len(moves)) and max(white) or min(-white)
+		self = copy.deepcopy(min(board_states, key=lambda board:(board.black, len(board.moves), -board.white)))
 		return self
 
 
