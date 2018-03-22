@@ -1,13 +1,22 @@
+'''
+Written by Greg Tan (726323) & Luis Adjero (762095)
+COMP30024: Artificial Intelligence
+Project Part A: Massacre
+Last Edited 22/03/2018
+
+Driver Program
+'''
+
 from board import Board
 import copy
-import time #TODO: Remove
+import time
 
 BOARD_SIZE = 8
 MOVES = "Moves"
 MASSACRE = "Massacre"
 WHITE = "O"
 BLACK = "@"
-EMPTY = "-"
+
 
 def main():
 	# Initalize start state from stdin
@@ -16,6 +25,7 @@ def main():
 
 	# Determine move or massacre
 	task = input()
+	
 	if task == MOVES:
 		# Print sum of all available moves for every white piece
 		print(sum(len(x) for x in board.available_moves(WHITE).values()))
@@ -36,3 +46,5 @@ if __name__ == '__main__':
 	start_time = time.time()
 	main()
 	print("Runtime: %s seconds" % (time.time() - start_time))
+
+#Algorithmsarefun
