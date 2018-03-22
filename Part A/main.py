@@ -16,6 +16,7 @@ MOVES = "Moves"
 MASSACRE = "Massacre"
 WHITE = "O"
 BLACK = "@"
+DEBUG = 1 # Set to 0 to output runtime
 
 
 def main():
@@ -45,6 +46,7 @@ def main():
 if __name__ == '__main__':
 	start_time = time.time()
 	main()
-	print("Runtime: %s seconds" % (time.time() - start_time))
+	if DEBUG == 0: 
+		print("Runtime: %s seconds" % (time.time() - start_time))
 
 #Algorithmsarefun
