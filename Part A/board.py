@@ -15,7 +15,7 @@ WHITE = "O"
 BLACK = "@"
 CORNER = "X"
 EMPTY = "-"
-DEPTH_LIMIT = 4
+DEPTH_LIMIT = 5
 
 class Board:
 
@@ -163,7 +163,6 @@ class Board:
 	# Return a sequence of moves for white pieces to eliminate all black pieces
 	def massacre(self):
 		depth = 0
-		optimal_cycle = False
 		# Potential boards are held in a list of board objects
 		# Load current state to begin
 		board_states = []
@@ -176,23 +175,20 @@ class Board:
 			possible_states = []
 			# For each of the potential boards
 			for board in board_states:
-				# A board with all black eliminated has been found
-				# Solveable in this cycle, stop generation of more sequences
-				if board.black == 0:
-					optimal_cycle = True
-					possible_states.append(board)
-					depth = DEPTH_LIMIT
-				elif not optimal_cycle:
-					# For each possible move for this board
-					# 1. Generate a new board
-					# 2. Execute move on new board
-					# 3. Add that new board to possible states
-					moves = board.available_moves(WHITE)
-					for pos_from in moves:
-						for pos_to in moves[pos_from]:
-							possible_board = copy.deepcopy(board)
-							possible_board.move(pos_from, pos_to)
-							possible_states.append(possible_board)
+				# For each possible move for this board
+				# 1. Generate a new board
+				# 2. Execute move on new board
+				# 3. Add that new board to possible states
+				moves = board.available_moves(WHITE)
+				for pos_from in moves:
+					for pos_to in moves[pos_from]:
+						possible_board = copy.deepcopy(board)
+						possible_board.move(pos_from, pos_to)
+						possible_states.append(possible_board)
+						# A board with all black eliminated has been found
+						# Solveable in this cycle, stop generation of more sequences
+						if possible_board.black == 0:
+							depth = DEPTH_LIMIT
 			# In the next cycle, generate the boards of the boards we generated
 			board_states = possible_states
 			depth+= 1

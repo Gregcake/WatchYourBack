@@ -33,7 +33,7 @@ def main():
 		# Print sum of all available moves for every black piece
 		print(sum(len(x) for x in board.available_moves(BLACK).values()))
 	elif task == MASSACRE:
-		# MinMax Limited Search (Depth factor of 4)
+		# IDDFS (Depth factor of 5)
 		# Keep running while black pieces still exists on the board
 		while(board.black>0):
 			board = board.massacre()
