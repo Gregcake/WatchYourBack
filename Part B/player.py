@@ -6,6 +6,8 @@ Last Edited 11/04/2018
 
 PLayer Class
 '''
+PLACEMENT = 1
+MOVE = 2
 
 class Player:
 
@@ -14,9 +16,10 @@ class Player:
     Input: Color representation for the game
     Return Value: None
     '''
-    def __init__(self, colour):
-        
-        pass
+    def __init__(self, color):
+		    self.board = Board(color);
+        self.player = self.board.player
+        self.enemy = self.board.enemy
 
     '''
     Referee calls program to make a move, decide what action to take. Should call update() with action at end to self-update.
@@ -24,20 +27,17 @@ class Player:
     Return:(x,y) for placement phase / ((from_x,from_y),(to_x,to_y)) for move phase / None
     '''
     def action(self, turns):
+        update(action, self.player)
         pass
+      
+	'''
+	Referee tells program opponent move, update board class accordingly
+	Input: Either player action ((from_x,from_y),(to_x,to_y)), can be player or opponent
+	Return: No return value
+	'''
+    def update(self, action, color = self.enemy):
+      if len(action[0]) == PLACEMENT:
+        self.board.place(color, action)
+      elif len(action[0]) == MOVE:
+        self.board.move(color, action)
 
-    '''
-    Referee tells program opponent move, update board class accordingly
-    Input: Either player action ((from_x,from_y),(to_x,to_y)), can be player or opponent
-    Return: No return value
-    '''
-    def update(self, action):
-        # call len() on first element of action to discern phase of game ie len() == 1 is placement phase
-        player = self.board.player
-        enemy = self.board.enemy
-        # update player representation of the board with opponents move
-        self.board.move(enemy, action)
-        # update player representation of the board if opponent's move
-        # caused one or more eliminations
-        self.board.refresh(enemy)
-        pass
