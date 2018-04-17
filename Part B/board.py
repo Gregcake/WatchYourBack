@@ -107,6 +107,12 @@ class Board:
 		self.grid[to_y][to_x] = color
 		refresh(color)
 
+	def place(self, color, position):
+		x = position[0]
+		y = position[1]
+		grid[y][x] == color
+		refresh(color)
+
 	# Check eliminations of opposite(color), check eliminations of color
 	def refresh(self, color):
 		order = [opposite(color), color]
