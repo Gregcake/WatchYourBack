@@ -15,6 +15,7 @@ EMPTY = "-"
 INIT_SIZE = 8
 
 class Board:
+
 	def __init__(self, player):
 		self.grid = empty_grid(INIT_SIZE)
 		apply_corners(self)
@@ -35,16 +36,32 @@ class Board:
 		return moves
 
 	# Returns a list of potential moves the player can make that will result in a kill
-	# [((from_x,from_y),(to_x,to_y)), ((from_x,from_y),(to_x,to_y))]
-	# Luis
-	def potential_kills(self):
-		pass
+  # [((from_x,from_y),(to_x,to_y)), ((from_x,from_y),(to_x,to_y))]
+  def potential_kills(self):
+      all_kills = []
+      for y in range(len(self.grid)):
+          for x in range(len(self.grid)):
+              if self.grid[y][x] == self.player:
+                  #get a list of all moves that piece can make
+                  piece_moves = self.check_moves((x, y))
+                  # (col1,row1) refers to the piece's position
+                  for ((col1,row1),(col2,row2)) in piece_moves:
+                      elim = self.check_eliminated((x,y))
+                      if elim:
+                          all_kills.append(((col1,row1), (col2,row2)))
+      return all_kills
 
 	# Returns a list of pieces the player controls that are in danger of elimination
-	# [(x,y), (x,y)]
-	# Luis
-	def potential_deaths(self):
-		pass
+  # [(x,y), (x,y)]
+  def potential_deaths(self):
+      endangered = []
+      for y in range(len(self.grid)):
+          for x in range(len(self.grid)):
+              if self.grid[y][x] == self.player:
+                  elim = self.check_eliminated((x,y))
+                  if elim:
+                      endangered.append((x,y))
+      return endangered
 
 	# Returns a list of moves that a piece at position can make
 	# Position = (x,y)
@@ -181,11 +198,11 @@ class Board:
 
 # Helper function, return enemy piece type
 def opposite(piece):
-	if piece == WHITE:
-		return BLACK
-	elif piece == BLACK:
-		return WHITE
+    if piece == WHITE:
+        return BLACK
+    elif piece == BLACK:
+        return WHITE
 
 def empty_grid(size):
-	grid = [[EMPTY for i in range(size)] for i in range(size)]
-	return grid
+    grid = [[EMPTY for i in range(size)] for i in range(size)]
+    return grid
