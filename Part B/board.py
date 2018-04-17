@@ -3,7 +3,6 @@ Written by Greg Tan (726323) & Luis Adjero (762095)
 COMP30024: Artificial Intelligence
 Project Part B: Watch Your Back!
 Last Edited 11/04/2018
-
 Board Class
 '''
 
