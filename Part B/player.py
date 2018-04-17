@@ -15,7 +15,7 @@ class Player:
 	Return Value: None
 	'''
 	def __init__(self, colour):
-		pass
+		self.board = Board(color);
 
 	'''
 	Referee calls program to make a move, decide what action to take. Should call update() with action at end to self-update.
@@ -29,6 +29,7 @@ class Player:
 	Referee tells program opponent move, update board class accordingly
 	Input: Either player action ((from_x,from_y),(to_x,to_y)), can be player or opponent
 	Return: No return value
+	Luis
 	'''
 	def update(self, action)
 		pass
