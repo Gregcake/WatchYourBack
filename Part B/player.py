@@ -10,7 +10,6 @@ PLACEMENT = 1
 MOVE = 2
 
 class Player:
-
     '''
     Setup internal representation of player and board class
     Input: Color representation for the game
