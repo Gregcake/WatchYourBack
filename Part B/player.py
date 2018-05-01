@@ -17,7 +17,7 @@ class Player:
     Return Value: None
     '''
     def __init__(self, color):
-		    self.board = Board(color);
+        self.board = Board(color)
         self.player = self.board.player
         self.enemy = self.board.enemy
 
@@ -27,15 +27,23 @@ class Player:
     Return:(x,y) for placement phase / ((from_x,from_y),(to_x,to_y)) for move phase / None
     '''
     def action(self, turns):
-        update(action, self.player)
-        pass
+        #update board to represent enemy move
+        update(action, self.enemy)
+        # placementt phase
+        if (turns < 24):
+            my_move = random.shuffle(self.board.available_moves())[0]
+            return my_move
+        # movement phase
+        else:
+            my_move = random.shuffle(self.board.available_moves())[0]
+            return my_move
       
-	'''
-	Referee tells program opponent move, update board class accordingly
-	Input: Either player action ((from_x,from_y),(to_x,to_y)), can be player or opponent
-	Return: No return value
-	'''
-    def update(self, action, color = self.enemy):
+    '''
+    Referee tells program opponent move, update board class accordingly
+    Input: Either player action ((from_x,from_y),(to_x,to_y)), can be player or opponent
+    Return: No return value
+    '''
+    def update(self, action, color):
       if len(action[0]) == PLACEMENT:
         self.board.place(color, action)
       elif len(action[0]) == MOVE:
