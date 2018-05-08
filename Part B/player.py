@@ -9,6 +9,8 @@ PLayer Class
 PLACEMENT = 1
 MOVE = 2
 import random
+import time
+import sys
 from board import Board
 
 class Player:
@@ -19,6 +21,7 @@ class Player:
     '''
     def __init__(self, color):
         self.board = Board(color)
+        self.strategy = Strategy()
         self.player = self.board.player
         self.enemy = self.board.enemy
         self.totalTurns = 0
@@ -30,38 +33,22 @@ class Player:
     Return:(x,y) for placement phase / ((from_x,from_y),(to_x,to_y)) for move phase / None
     '''
     def action(self, turns):
-        #check for board shrinkage
-        if turns == 127:
-            self.board.apply_shrink
+        t = time.time()
+        if self.totalTurns < 24:
+            return self.strategy.placement(board, t)
 
-        #now choose an action
-        if (self.totalTurns <24):
-            #restrict to white starting zone
-            x = random.randint(0,7)
-            y = random.randint(2,5)
-            
-            #randomly choose an unoccupied position near the centre of the board
-            while (not self.board.check_place(self.player,(x,y))):
-                x = random.randint(0,7)
-                y = random.randint(2,5)
-                
-            #print(str(self.player) + " places at " +"("+str(x)+","+str(y)+")")
-            self.board.place(self.player, (x,y))
-            self.totalTurns += 1
-            self.board.print_board()
-            return (x,y)
-        
         # movement phase
         else:
+            return self.strategy.movement(board, t)
+
+        self.totalTurns+= 1
+
+
+
+        #check for board shrinkage
+        if turns == 127:
+            self.board.process_shrink(self.player)
             
-            self.totalTurns += 1
-            
-            moves = self.board.available_moves()
-            #print(str(self.player)+" moved: "+str(moves[0]))
-            self.board.move(self.player, moves[0])
-            #self.board.print_board()
-            return moves[0]
-      
     '''
     Referee tells program opponent move, update board class accordingly
     Input: Either player action ((from_x,from_y),(to_x,to_y)), can be player or opponent
