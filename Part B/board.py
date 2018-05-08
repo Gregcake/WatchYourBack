@@ -5,7 +5,8 @@ Project Part B: Watch Your Back!
 Last Edited 11/04/2018
 Board Class
 '''
-
+WHITE_S = "white"
+BLACK_S = "black"
 WHITE = "O"
 BLACK = "@"
 CORNER = "X"
@@ -15,71 +16,51 @@ INIT_SIZE = 8
 import random
 class Board:
 
-    def __init__(self, player):
-        if player == 'white':
-            pieceColor = WHITE
-        else:
-            pieceColor = BLACK
+    def __init__(self, color):
+        if color == WHITE_S:
+            color = WHITE
+        elif color == BLACK_S:
+            color = BLACK
+        self.player = color
+        self.enemy = opposite(color)
+        self.player_pieces = 0
+        self.enemy_pieces = 0
         self.grid = empty_grid(INIT_SIZE)
         self.apply_corners()
-        self.black = 0
-        self.white = 0
-        self.player = pieceColor
-        self.enemy = opposite(pieceColor)
-        self.turns = 0
 
-    # Returns a list of available moves for each piece on the board the player controls
-    # [((from_x,from_y),(to_x,to_y)), ((from_x,from_y),(to_x,to_y))]
-    def available_moves(self):
-        moves = []
+    def place(self, color, pos):
+        x = pos[0]
+        y = pos[1]
+        self.grid[y][x] = color
+        self.update(color)
+
+    def available_placements(self, color):
+        possible = []
+        if color == WHITE:
+            y_min, y_max = 0,5
+        else:
+            y_min, y_max = 2,7
+
+        for y in range(y_min, y_max+1):
+            for x in range(len(self.grid[y])):
+                if self.grid[y][x] == EMPTY:
+                    possible.append((x,y))
+        return possible
+
+    def available_moves(self, color):
+        possible = []
         for y in range(len(self.grid)):
-            for x in range(len(self.grid)):
-                if self.grid[y][x] == self.player:
+            for x in range(len(self.grid[y])):
+                piece = self.grid[y][x]
+                if piece == color:
                     for move in self.check_moves((x,y)):
-                        ''' changed from append(move) to append(piece,move)'''
-                        piece = (x,y)
-                        moves.append((piece, move))
-        return moves
+                        possible.append(((x,y),move))
+        return possible
 
-    # Returns a list of potential moves the player can make that will result in a kill
-  # [((from_x,from_y),(to_x,to_y)), ((from_x,from_y),(to_x,to_y))]
-    def potential_kills(self):
-        all_kills = []
-        for y in range(len(self.grid)):
-            for x in range(len(self.grid)):
-                if self.grid[y][x] == self.player:
-                    #get a list of all moves that piece can make
-                    piece_moves = self.check_moves((x, y))
-                    # (col1,row1) refers to the piece's position
-                    for ((col1,row1),(col2,row2)) in piece_moves:
-                        elim = self.check_eliminated((x,y))
-                        if elim:
-                            all_kills.append(((col1,row1), (col2,row2)))
-        return all_kills
-
-    # Returns a list of pieces the player controls that are in danger of elimination
-    # [(x,y), (x,y)]
-    def potential_deaths(self):
-        endangered = []
-        for y in range(len(self.grid)):
-            for x in range(len(self.grid)):
-                if self.grid[y][x] == self.player:
-                    elim = self.check_eliminated((x,y))
-                    if elim:
-                        endangered.append((x,y))
-        return endangered
-
-    # Returns a list of moves that a piece at position can make
-    # Position = (x,y)
-    # [((x,y),(to_x,to_y)), ((x,y),(to_x,to_y))]
-    '''previously moves.append((y_ord,x_ord)) but now moves.append((x_ord,y_ord))
-    [y][x] when indexing, (x,y) when representing board position
-    '''
-    def check_moves(self, position):
+    def check_moves(self,pos):
+        x = pos[0]
+        y = pos[1]
         moves = []
-        x = position[0]
-        y = position[1]
-
         # Check north
         try:
             # Check adjacent, block negative indexing
@@ -120,66 +101,40 @@ class Board:
         random.shuffle(moves)
         return moves
 
+    def move(self, color, pos_from, pos_to):
+        x_from = pos_from[0]
+        y_from = pos_from[1]
+        x_to = pos_to[0]
+        y_to = pos_to[1]
+        self.grid[y_from][x_from] = EMPTY
+        self.grid[y_to][x_to] = color
+        self.update(color)
 
-    # Apply a move to the board and refresh board
-    # Color = color of piece that is being moved
-    # Position = [((from_x,from_y),(to_x,to_y))]
-    def move(self, color, position):
-        from_x = position[0][0]
-        from_y = position[0][1]
-        to_x = position[1][0]
-        to_y = position[1][1]
-        self.grid[from_y][from_x] = EMPTY
-        self.grid[to_y][to_x] = color
-        self.refresh(color)
+    def update(self, color):
+        self.process_eliminations(color)
+        self.process_eliminations(opposite(color))
+        player = 0
+        enemy = 0
+        for y in range(len(self.grid)):
+            for x in range(len(self.grid[y])):
+                piece = self.grid[y][x]
+                if piece == self.player:
+                    player+= 1
+                elif piece == self.enemy:
+                    enemy+= 1
+        self.player_pieces = player
+        self.enemy_pieces = enemy
 
-    def check_place(self, color, position):
-        x = position[0]
-        y = position[1]
+    def process_eliminations(self, color):
+        for y in range(len(self.grid)):
+            for x in range(len(self.grid[y])):
+                piece = self.grid[y][x]
+                if piece == opposite(color) and self.check_eliminations((x,y)):
+                    self.grid[y][x] = EMPTY
 
-        if (self.grid[y][x] == EMPTY):
-            return True
-        else:
-            return False
-
-    def place(self, color, position):
-        if position == None:
-            return
-        
-        x = position[0]
-        y = position[1]
-        self.grid[y][x] = color
-        if color == WHITE:
-            self.white+= 1
-        else:
-            self.black+= 1
-
-        
-        self.refresh(color)
-        return
-
-    # Check eliminations of opposite(color), check eliminations of color
-    def refresh(self, color):
-        order = [opposite(color), color]
-        for piece in order:
-            for y in range(len(self.grid)):
-                for x in range(len(self.grid)):
-                    if self.grid[y][x] == piece:
-                        if self.check_eliminated((x,y)):
-                            # Piece eliminated
-                            # Empty occupying square and deduct piece type count
-                            self.grid[y][x] = EMPTY
-                            if piece == BLACK:
-                                self.black-= 1
-                            elif piece == WHITE:
-                                self.white-= 1
-
-    # Given a row,col, check if the piece on that square is eliminated
-    # True if eliminated, false otherwise
-    def check_eliminated(self, position):
-        # Determine color of piece we're checking to eliminate and it's opposite
-        x = position[0]
-        y = position[1]
+    def check_eliminations(self, pos):
+        x = pos[0]
+        y = pos[1]
         piece = self.grid[y][x]
         enemy = opposite(piece)
 
@@ -188,52 +143,33 @@ class Board:
         try:
             north = self.grid[y-1][x]
             south = self.grid[y+1][x]
-            if((north == enemy or north == CORNER) and
-                (south == enemy or south == CORNER)):
-                print("elimination north-south at: "+str(position))
+            if((north == enemy or north == CORNER) and (south == enemy or south == CORNER)):
                 return True
         except:
             pass
         try:
             east = self.grid[y][x-1]
             west = self.grid[y][x+1]
-            if((east == enemy or east == CORNER) and 
-                (west == enemy or west == CORNER)):
-                
-                print("elimination east-west at: "+str(position))
+            if((east == enemy or east == CORNER) and (west == enemy or west == CORNER)):
                 return True
         except:
             pass
         # Piece not cornered
         return False
 
-    # Shrink board, refresh board
-    def process_shrink(self, color):
-        apply_shrink()
-        apply_corners()
-        refresh(self.player)
-
-    # Apply shrinkage on board
     def apply_shrink(self):
-        del self.grid[0]
-        del self.grid[-1]
+        del(self.grid[0])
+        del(self.grid[-1])
         for row in self.grid:
-            del row[0]
-            del row[-1]
-
+            del(row[0])
+            del(row[-1])
+        self.apply_corners()
+        
     def apply_corners(self):
-        self.grid[0][-1] = CORNER
         self.grid[0][0] = CORNER
+        self.grid[0][-1] = CORNER
         self.grid[-1][0] = CORNER
         self.grid[-1][-1] = CORNER
-
-    def print_board(self):
-        print("\n===")
-        print(str(self.player)+"'s board")
-        for row in range(INIT_SIZE):
-            print(self.grid[row])
-        print("===")
-        
 
 # Helper function, return enemy piece type
 def opposite(piece):
@@ -245,3 +181,13 @@ def opposite(piece):
 def empty_grid(size):
     grid = [[EMPTY for i in range(size)] for i in range(size)]
     return grid
+
+def print_board(board):
+    for row in board.grid:
+        print(row)
+
+board = Board("white")
+print_board(board)
+print(board.player_pieces)
+print(board.enemy_pieces)
+print("")

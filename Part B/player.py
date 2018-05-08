@@ -36,14 +36,11 @@ class Player:
         t = time.time()
         if self.totalTurns < 24:
             return self.strategy.placement(board, t)
-
         # movement phase
         else:
             return self.strategy.movement(board, t)
 
         self.totalTurns+= 1
-
-
 
         #check for board shrinkage
         if turns == 127:
