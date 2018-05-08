@@ -11,6 +11,7 @@ WHITE = "O"
 BLACK = "@"
 CORNER = "X"
 EMPTY = "-"
+SHRINK = "?"
 
 INIT_SIZE = 8
 import random
@@ -26,6 +27,7 @@ class Board:
         self.player_pieces = 0
         self.enemy_pieces = 0
         self.grid = empty_grid(INIT_SIZE)
+        self.size = INIT_SIZE
         self.apply_corners()
 
     def place(self, color, pos):
@@ -143,14 +145,14 @@ class Board:
         try:
             north = self.grid[y-1][x]
             south = self.grid[y+1][x]
-            if((north == enemy or north == CORNER) and (south == enemy or south == CORNER)):
+            if((north == enemy or north == CORNER) and (south == enemy or south == CORNER)) and (y-1>=0):
                 return True
         except:
             pass
         try:
             east = self.grid[y][x-1]
             west = self.grid[y][x+1]
-            if((east == enemy or east == CORNER) and (west == enemy or west == CORNER)):
+            if((east == enemy or east == CORNER) and (west == enemy or west == CORNER)) and (x-1>=0):
                 return True
         except:
             pass
@@ -158,18 +160,38 @@ class Board:
         return False
 
     def apply_shrink(self):
-        del(self.grid[0])
-        del(self.grid[-1])
-        for row in self.grid:
-            del(row[0])
-            del(row[-1])
+        if self.size == 8:
+            self.shrink(0, 7, 0, 7)
+        if self.size == 6:
+            self.shrink(1, 6, 1, 6)
+        self.size-= 2
         self.apply_corners()
+
+    def shrink(self, top, bottom, left, right):
+        shrink_row = [SHRINK] * INIT_SIZE
+        self.grid[top] = shrink_row
+        self.grid[bottom] = shrink_row
+        for y in range(len(self.grid)):
+            for x in range(len(self.grid[y])):
+                if x == left or x == right:
+                    self.grid[y][x] = SHRINK
         
     def apply_corners(self):
-        self.grid[0][0] = CORNER
-        self.grid[0][-1] = CORNER
-        self.grid[-1][0] = CORNER
-        self.grid[-1][-1] = CORNER
+        if self.size == 8:
+            self.grid[0][0] = CORNER
+            self.grid[0][-1] = CORNER
+            self.grid[-1][0] = CORNER
+            self.grid[-1][-1] = CORNER
+        elif self.size == 6:
+            self.grid[1][1] = CORNER
+            self.grid[6][1] = CORNER
+            self.grid[1][6] = CORNER
+            self.grid[6][6] = CORNER
+        elif self.size == 4:
+            self.grid[2][2] = CORNER
+            self.grid[5][2] = CORNER
+            self.grid[2][5] = CORNER
+            self.grid[5][5] = CORNER
 
 # Helper function, return enemy piece type
 def opposite(piece):
@@ -185,9 +207,3 @@ def empty_grid(size):
 def print_board(board):
     for row in board.grid:
         print(row)
-
-board = Board("white")
-print_board(board)
-print(board.player_pieces)
-print(board.enemy_pieces)
-print("")
