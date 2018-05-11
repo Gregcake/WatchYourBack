@@ -4,13 +4,9 @@ import time
 from heuristic  import Heuristic
 from copy import deepcopy
 
-WHITE = "O"
-BLACK = "@"
-CORNER = "X"
-EMPTY = "-"
 DEBUG = False
-MAX_DEPTH = 3
-CENTER = 3.5
+PLACEMENT_DEPTH = 2
+MOVEMENT_DEPTH = 3
 MAX_TIME = 90
 
 class Strategy:
@@ -33,7 +29,7 @@ class Strategy:
 			return max(potential_boards)[1]
 
 	def placement_AB(self, board, depth, a, b, color):
-		if board.player_pieces <= 2 or depth == MAX_DEPTH or time.time()-self.time>MAX_TIME:
+		if board.player_pieces <= 2 or depth == PLACEMENT_DEPTH or time.time()-self.time>MAX_TIME:
 			return Heuristic(board)
 		if color == board.player:
 			v = -math.inf
@@ -75,7 +71,7 @@ class Strategy:
 			return max(potential_boards)[1]
 
 	def movement_AB(self, board, depth, a, b, color):
-		if board.player_pieces <= 2 or depth == MAX_DEPTH or time.time()-self.time>MAX_TIME:
+		if board.player_pieces <= 2 or depth == MOVEMENT_DEPTH or time.time()-self.time>MAX_TIME:
 			return Heuristic(board)
 		if color == board.player:
 			v = -math.inf
@@ -97,7 +93,3 @@ class Strategy:
 				if b <= a:
 					break
 			return v
-		
-	def reset(self):
-		self.time = 0
-		self.memory = 0
