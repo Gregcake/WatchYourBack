@@ -1,9 +1,3 @@
-"""
-Referee for COMP30024 Artificial Intelligence, 2018
-Authors: Matt Farrugia and Shreyash Patodia
-version: v1.2
-"""
-
 import gc
 import time
 import argparse
