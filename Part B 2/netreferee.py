@@ -1,11 +1,3 @@
-"""
-Networked Watch Your Back! client for COMP30024: Artificial Intelligence, 2018
-
-version 1.0
-
-by Matt Farrugia (based on referee by Matt Farrugia and Shreyash Patodia)
-"""
-
 import argparse
 import importlib
 from wubpp import connect, WUBPlayerProtocol
